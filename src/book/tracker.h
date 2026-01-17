@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <stdexcept>
 #include <cassert>
 #include "constants.h"
 
@@ -32,11 +33,11 @@ struct BaseTracker {
 
   void fill(double fill_qty, double fill_cost) {
     if(funds_ != 0 && fill_cost + filled_cost_ > funds_) {
-      throw new std::runtime_error("Market buy fill exceeds funds");
+      throw std::runtime_error("Market buy fill exceeds funds");
     }
 
     if(qty_ != 0 && fill_qty + filled_qty_ > qty_) {
-      throw new std::runtime_error("Fill qty exceeds order qty");
+      throw std::runtime_error("Fill qty exceeds order qty");
     }
 
     avg_price_ = (avg_price_ * filled_qty_  + fill_cost) / (filled_qty_ + fill_qty); 

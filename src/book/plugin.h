@@ -18,6 +18,7 @@ class Plugin {
 protected:
   using OrderPtr = typename Tracker::OrderPtr;
   typedef std::multimap<BookPrice, Tracker> TrackerMap;
+  typedef std::vector<Tracker> TrackerVec;
   typedef Callback<OrderPtr> TypedCallback;
 
   virtual std::vector<TypedCallback>& callbacks() = 0;
@@ -30,6 +31,7 @@ protected:
   virtual void do_replace(const OrderPtr& order, double delta) = 0;
   virtual bool add_tracker(Tracker& taker) = 0;
   virtual bool add(const OrderPtr& order) = 0;
+  virtual double market_price() const = 0;
 
   virtual void process_callbacks() = 0;
   virtual uint32_t symbol_id() const = 0;
@@ -41,9 +43,11 @@ protected:
     const Tracker& taker,
     InsertRejectReasons& reason) { }
 
+  virtual bool should_add_tracker(
+    const Tracker& taker) { return true; }
+
   virtual void after_add_tracker(
     const Tracker& taker) {}
-
 
   virtual void should_trade(
     Tracker& taker,
@@ -57,6 +61,11 @@ protected:
     bool maker_is_bid,
     double qty,
     double price) {}
+
+  virtual void on_market_price_change(
+    double prev_price,
+    double new_price) {}
+
 };
 
 }

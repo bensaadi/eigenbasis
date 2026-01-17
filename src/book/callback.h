@@ -20,6 +20,7 @@ static const std::vector<std::string> cbTypeStr = {
   "REPLACE",
   "REPLACE_REJECT",
   "FILL",
+  "STOP TRIGGER",
   "BOOK UPDATE",
   "TRADE",
   "POSITION OPEN",
@@ -48,6 +49,7 @@ public:
     cb_order_replace,
     cb_order_replace_reject,
     cb_order_fill, /* not to be used for calculations. use cb_trade instead */
+    cb_order_stop_trigger,
     cb_book_update,
     cb_trade,
     cb_position_open,
@@ -137,6 +139,10 @@ public:
     double filled_qty,
     double avg_price,
     CancelRejectReasons reason);
+
+  static Callback<OrderPtr> stop_trigger(
+    const OrderPtr& order);
+
 
   static Callback<OrderPtr> book_update();
 
@@ -303,6 +309,17 @@ Callback<OrderPtr> Callback<OrderPtr>::replace_reject(
   cb.reason = reason;
   return cb;
 }
+
+template <class OrderPtr>
+Callback<OrderPtr>
+Callback<OrderPtr>::stop_trigger(
+const OrderPtr& order) {
+  Callback<OrderPtr> cb;
+  cb.type = cb_order_stop_trigger;
+  cb.order = order;
+  return cb;
+}
+
 
 template <class OrderPtr>
 Callback<OrderPtr>

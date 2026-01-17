@@ -3,6 +3,8 @@
 #include <book/plugins/self_trade_policy.h>
 #include <book/plugins/post_only.h>
 #include <book/plugins/reduce_only.h>
+#include <book/plugins/stop_orders.h>
+
 #include <utils/uint128.h>
 
 namespace fixtures {
@@ -79,6 +81,27 @@ public:
 
 private:
   bool reduce_only_;
+};
+
+
+class OrderWithStopPrice : public OrderWithUserID, public StopOrder {
+public:
+  OrderWithStopPrice(
+    uint32_t user_id,
+    bool is_bid,
+    double price,
+    double qty,
+    double funds,
+    double stop_price = 0) :
+      OrderWithUserID(user_id, is_bid, price, qty, funds),
+       stop_price_(stop_price) { }
+
+  double stop_price() const {
+    return stop_price_;
+  }
+
+private:
+  double stop_price_;
 };
 
 

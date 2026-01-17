@@ -20,6 +20,13 @@
 #define INVOKE_PLUGIN_HOOKS(FN) \
   (void) std::initializer_list<int>{ (Plugins::FN, 0)... };
 
+#define TRUE_FOR_ALL_PLUGINS(FN) \
+    ([=]() -> bool { \
+      bool result = true; \
+      (void) std::initializer_list<int>{ (result &= Plugins::FN, 0)... }; \
+      return result; \
+    })()
+
 namespace book {
 
 template <class Tracker, class... Plugins>
@@ -46,10 +53,10 @@ public:
   const TrackerMap& bids() const { return bids_; }
   const TrackerMap& asks() const { return asks_; }
 
+protected:
   /* for callbacks to be accessed from plugins */
   Callbacks& callbacks() { return callbacks_; };
 
-protected:
   bool match(
     Tracker& taker,
     TrackerMap& makers);
@@ -95,7 +102,9 @@ OB<Tracker, Plugins...>::OB(uint32_t symbol_id) :
 
 template <class Tracker, class... Plugins>
 void OB<Tracker, Plugins...>::set_market_price(double price) {
+  double prev_market_price = market_price_;
   market_price_ = price;
+  INVOKE_PLUGIN_HOOKS(on_market_price_change(prev_market_price, price))
 }
 
 template <class Tracker, class... Plugins>
@@ -117,7 +126,9 @@ bool OB<Tracker, Plugins...>::add(const OrderPtr& order) {
   size_t accept_cb_index = callbacks_.size();
   emit_callback(TypedCallback::accept(order));
   
-  bool matched = add_tracker(taker);
+  bool should_add_tracker_value = TRUE_FOR_ALL_PLUGINS(should_add_tracker(taker));
+
+  bool matched = should_add_tracker_value && add_tracker(taker);
 
   callbacks_[accept_cb_index].qty = taker.filled_qty();
   callbacks_[accept_cb_index].avg_price = taker.avg_price();
